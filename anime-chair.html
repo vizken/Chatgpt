@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Anime.js Red Blue Chair Demo</title>
+<style>
+  :root{--bg:#111;--fg:#f4f4f4;--muted:#aaa;--red:#d32626;--blue:#1e4fa3;--yellow:#e7bd29;--wood:#151515}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:Arial,"Noto Sans TC",sans-serif;overflow:hidden}
+  body{display:grid;grid-template-rows:auto 1fr}
+  header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid #2a2a2a;background:#151515;z-index:20}
+  header strong{margin-right:8px}
+  button{appearance:none;border:1px solid #555;background:#202020;color:#fff;padding:8px 12px;border-radius:7px;cursor:pointer}
+  button:hover{background:#2a2a2a}
+  .note{font-size:12px;color:var(--muted);margin-left:auto}
+  #stage{position:relative;display:grid;place-items:center;perspective:1100px;overflow:hidden}
+  #chair-wrap{position:relative;width:min(76vw,720px);height:min(72vh,680px);transform-style:preserve-3d;display:grid;place-items:center}
+  #chair{position:relative;width:420px;height:460px;transform-style:preserve-3d;transform:rotateX(-10deg) rotateY(-28deg) rotateZ(-2deg)}
+  .part{position:absolute;transform-style:preserve-3d;box-shadow:0 10px 22px rgba(0,0,0,.22)}
+  .beam{background:var(--wood);border:1px solid #222}
+  .seat{width:210px;height:190px;background:var(--blue);left:112px;top:198px;transform-origin:50% 100%;transform:rotateX(67deg) translateZ(20px)}
+  .back{width:230px;height:250px;background:var(--red);left:98px;top:30px;transform-origin:50% 100%;transform:rotateX(-12deg) translateZ(-28px)}
+  .b1{width:22px;height:390px;left:76px;top:35px;transform:translateZ(42px) rotateZ(2deg)}
+  .b2{width:22px;height:390px;right:72px;top:35px;transform:translateZ(42px) rotateZ(-2deg)}
+  .b3{width:330px;height:22px;left:46px;top:120px;transform:translateZ(50px) rotateZ(-6deg)}
+  .b4{width:330px;height:22px;left:46px;top:350px;transform:translateZ(55px) rotateZ(5deg)}
+  .b5{width:22px;height:280px;left:70px;top:175px;transform:translateZ(-22px) rotateZ(-5deg)}
+  .b6{width:22px;height:280px;right:64px;top:175px;transform:translateZ(-22px) rotateZ(5deg)}
+  .yellow{background:var(--yellow)}
+  .cap1{width:70px;height:22px;left:20px;top:400px;transform:translateZ(58px) rotateZ(4deg)}
+  .cap2{width:70px;height:22px;right:17px;top:396px;transform:translateZ(58px) rotateZ(-4deg)}
+  .axis{position:absolute;left:50%;top:50%;width:2px;height:2px;transform-style:preserve-3d}
+  .label{position:absolute;font-size:12px;padding:4px 6px;border-radius:5px;background:rgba(0,0,0,.72);border:1px solid #666;opacity:0;pointer-events:none}
+  .label.red{left:70%;top:14%}.label.blue{left:63%;top:59%}.label.frame{left:18%;top:38%}
+  .floor{position:absolute;width:900px;height:900px;border:1px solid #252525;background-image:linear-gradient(#1b1b1b 1px,transparent 1px),linear-gradient(90deg,#1b1b1b 1px,transparent 1px);background-size:40px 40px;transform:rotateX(90deg) translateZ(-245px);opacity:.6}
+  #caption{position:absolute;left:20px;bottom:18px;color:#bbb;font-size:13px;line-height:1.55;max-width:460px}
+  @media(max-width:700px){#chair{transform:scale(.75) rotateX(-10deg) rotateY(-28deg)}.note{width:100%;margin-left:0}}
+</style>
+</head>
+<body>
+<header>
+  <strong>Anime.js — Red & Blue Chair / 2.5D Demo</strong>
+  <button id="assemble">組裝</button>
+  <button id="explode">分解</button>
+  <button id="rotate">旋轉展示</button>
+  <button id="sequence">完整動畫</button>
+  <button id="reset">重置</button>
+  <span class="note">Anime.js 控制 DOM/CSS Transform；不是 WebGL 真 3D。</span>
+</header>
+<main id="stage">
+  <div id="chair-wrap">
+    <div class="floor"></div>
+    <div id="chair">
+      <div class="part back" data-name="back"></div>
+      <div class="part seat" data-name="seat"></div>
+      <div class="part beam b1" data-name="beam"></div>
+      <div class="part beam b2" data-name="beam"></div>
+      <div class="part beam b3" data-name="beam"></div>
+      <div class="part beam b4" data-name="beam"></div>
+      <div class="part beam b5" data-name="beam"></div>
+      <div class="part beam b6" data-name="beam"></div>
+      <div class="part yellow cap1" data-name="yellow"></div>
+      <div class="part yellow cap2" data-name="yellow"></div>
+      <div class="label red">RED BACKREST</div>
+      <div class="label blue">BLUE SEAT</div>
+      <div class="label frame">BLACK FRAME</div>
+    </div>
+  </div>
+  <div id="caption">這個案例刻意不用 Three.js。所有構件都是 HTML 元素，靠 CSS perspective / rotateX / rotateY / translateZ 建立 2.5D 空間，再由 Anime.js 控制組裝、分解、旋轉與節奏。</div>
+</main>
+
+<script type="module">
+  import { animate, createTimeline, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+esm';
+
+  const chair = document.querySelector('#chair');
+  const parts = [...document.querySelectorAll('.part')];
+  const labels = [...document.querySelectorAll('.label')];
+  let active = null;
+
+  const explodeTargets = [
+    {x:-110,y:-40,z:120,rx:-6,ry:-6,rz:-6},
+    {x:90,y:90,z:145,rx:12,ry:3,rz:5},
+    {x:-150,y:0,z:60,rx:0,ry:-12,rz:-8},
+    {x:150,y:0,z:60,rx:0,ry:12,rz:8},
+    {x:-85,y:-120,z:95,rx:5,ry:-8,rz:-8},
+    {x:95,y:125,z:80,rx:-5,ry:8,rz:8},
+    {x:-145,y:110,z:-70,rx:10,ry:-12,rz:-5},
+    {x:145,y:110,z:-70,rx:10,ry:12,rz:5},
+    {x:-190,y:145,z:95,rx:0,ry:-8,rz:-8},
+    {x:190,y:145,z:95,rx:0,ry:8,rz:8}
+  ];
+
+  function stop(){ if(active?.pause) active.pause(); active=null; }
+
+  function resetTransforms(){
+    stop();
+    parts.forEach(p=>p.style.removeProperty('translate'));
+    parts.forEach(p=>{
+      p.style.removeProperty('rotate');
+      p.style.removeProperty('scale');
+    });
+    chair.style.transform='rotateX(-10deg) rotateY(-28deg) rotateZ(-2deg)';
+    labels.forEach(l=>l.style.opacity=0);
+  }
+
+  function explode(){
+    stop();
+    active=createTimeline({defaults:{duration:900,ease:'inOut(3)'}});
+    parts.forEach((p,i)=>{
+      const t=explodeTargets[i];
+      active.add(p,{x:t.x,y:t.y,z:t.z,rotateX:t.rx,rotateY:t.ry,rotateZ:t.rz,delay:i*35},0);
+    });
+    active.add(labels,{opacity:1,duration:450,delay:stagger(90)},420);
+  }
+
+  function assemble(){
+    stop();
+    active=createTimeline({defaults:{duration:850,ease:'out(4)'}});
+    parts.forEach((p,i)=>active.add(p,{x:0,y:0,z:0,rotateX:0,rotateY:0,rotateZ:0,delay:i*28},0));
+    active.add(labels,{opacity:0,duration:300},0);
+  }
+
+  function rotateShow(){
+    stop();
+    active=animate(chair,{rotateY:[-28,332],rotateX:[-10,-4,-10],duration:5200,ease:'inOutSine',loop:true});
+  }
+
+  function sequence(){
+    stop();
+    resetTransforms();
+    active=createTimeline({defaults:{ease:'inOut(3)'}});
+    active.add(chair,{scale:[.82,1],rotateY:[-62,-28],duration:1000});
+    parts.forEach((p,i)=>{
+      const t=explodeTargets[i];
+      active.add(p,{x:t.x,y:t.y,z:t.z,rotateX:t.rx,rotateY:t.ry,rotateZ:t.rz,duration:700,delay:i*25},700);
+    });
+    active.add(labels,{opacity:1,duration:350,delay:stagger(80)},950);
+    active.add({}, {duration:900});
+    active.add(labels,{opacity:0,duration:250});
+    parts.forEach((p,i)=>active.add(p,{x:0,y:0,z:0,rotateX:0,rotateY:0,rotateZ:0,duration:800,delay:i*22},2200));
+    active.add(chair,{rotateY:[-28,55,-28],duration:2200,ease:'inOutSine'},2950);
+  }
+
+  document.querySelector('#explode').onclick=explode;
+  document.querySelector('#assemble').onclick=assemble;
+  document.querySelector('#rotate').onclick=rotateShow;
+  document.querySelector('#sequence').onclick=sequence;
+  document.querySelector('#reset').onclick=resetTransforms;
+
+  sequence();
+</script>
+</body>
+</html>
