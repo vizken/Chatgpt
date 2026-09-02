@@ -1,207 +1,41 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js 3D Dimension Annotation Test</title>
-  <style>
-    html,body{margin:0;height:100%;overflow:hidden;background:#111;color:#fff;font-family:Arial,"Noto Sans TC",sans-serif}
-    #app{position:fixed;inset:0}
-    #hud{position:fixed;left:16px;top:16px;z-index:10;background:rgba(0,0,0,.68);padding:12px 14px;border:1px solid rgba(255,255,255,.18);border-radius:10px;max-width:340px;line-height:1.5}
-    #hud b{display:block;margin-bottom:4px}
-    #hud button{margin-top:8px;padding:7px 10px;border:1px solid #666;background:#222;color:#fff;border-radius:6px;cursor:pointer}
-    .label{padding:4px 7px;background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.5);border-radius:5px;white-space:nowrap;font-size:13px;pointer-events:none;transform:translate(-50%,-50%)}
-    .point{position:fixed;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #111;pointer-events:none;transform:translate(-50%,-50%);z-index:9}
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <div id="hud">
-    <b>3D Dimension / Annotation Test</b>
-    1. 點模型表面第一點<br>
-    2. 再點第二點<br>
-    3. 產生真正位於 3D World Space 的尺寸線與箭頭<br>
-    <small>單位：1 Three.js unit = 1 m</small><br>
-    <button id="clear">清除標註</button>
-  </div>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
-    }
-  }
-  </script>
-
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-
-    const app = document.getElementById('app');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
-
-    const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 1000);
-    camera.position.set(8, 7, 10);
-
-    const renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setPixelRatio(devicePixelRatio);
-    renderer.setSize(innerWidth, innerHeight);
-    app.appendChild(renderer.domElement);
-
-    const labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(innerWidth, innerHeight);
-    labelRenderer.domElement.style.position = 'fixed';
-    labelRenderer.domElement.style.inset = '0';
-    labelRenderer.domElement.style.pointerEvents = 'none';
-    document.body.appendChild(labelRenderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.target.set(0,1,0);
-
-    scene.add(new THREE.HemisphereLight(0xffffff,0x333333,2));
-    const dl = new THREE.DirectionalLight(0xffffff,3);
-    dl.position.set(4,8,6);
-    scene.add(dl);
-
-    const grid = new THREE.GridHelper(20,20,0x555555,0x2b2b2b);
-    scene.add(grid);
-
-    const pickables = [];
-    const wallMat = new THREE.MeshStandardMaterial({color:0x8f99a6,roughness:.75,metalness:.05});
-
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(8,.2,6), new THREE.MeshStandardMaterial({color:0x4a4a4a}));
-    floor.position.y = -.1;
-    scene.add(floor); pickables.push(floor);
-
-    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(8,3,.25), wallMat);
-    wall1.position.set(0,1.5,-2.875);
-    scene.add(wall1); pickables.push(wall1);
-
-    const wall2 = new THREE.Mesh(new THREE.BoxGeometry(.25,3,6), wallMat);
-    wall2.position.set(-3.875,1.5,0);
-    scene.add(wall2); pickables.push(wall2);
-
-    const box = new THREE.Mesh(new THREE.BoxGeometry(2.2,1.6,1.8), new THREE.MeshStandardMaterial({color:0xb57f4a}));
-    box.position.set(1.5,.8,.6);
-    scene.add(box); pickables.push(box);
-
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let pendingPoint = null;
-    let markerA = null;
-    const annotationRoot = new THREE.Group();
-    scene.add(annotationRoot);
-
-    function marker(p){
-      const g = new THREE.SphereGeometry(.07,16,16);
-      const m = new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false});
-      const s = new THREE.Mesh(g,m);
-      s.position.copy(p);
-      s.renderOrder = 20;
-      annotationRoot.add(s);
-      return s;
-    }
-
-    function lineBetween(a,b, material){
-      const geo = new THREE.BufferGeometry().setFromPoints([a,b]);
-      const line = new THREE.Line(geo, material);
-      line.renderOrder = 10;
-      annotationRoot.add(line);
-      return line;
-    }
-
-    function addArrow(point, dir, length=.22){
-      const cone = new THREE.Mesh(
-        new THREE.ConeGeometry(.07,length,18),
-        new THREE.MeshBasicMaterial({color:0xffd54a,depthTest:false})
-      );
-      cone.position.copy(point);
-      const q = new THREE.Quaternion();
-      q.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
-      cone.quaternion.copy(q);
-      cone.renderOrder = 20;
-      annotationRoot.add(cone);
-    }
-
-    function addDimension(a,b){
-      const dir = new THREE.Vector3().subVectors(b,a);
-      const distance = dir.length();
-      if(distance < .001) return;
-      const unit = dir.clone().normalize();
-
-      // Find a stable perpendicular offset direction relative to world up.
-      let offsetDir = new THREE.Vector3().crossVectors(unit, new THREE.Vector3(0,1,0));
-      if(offsetDir.lengthSq() < .001) offsetDir.set(1,0,0);
-      offsetDir.normalize().multiplyScalar(.35);
-
-      const da = a.clone().add(offsetDir);
-      const db = b.clone().add(offsetDir);
-      const extMat = new THREE.LineBasicMaterial({color:0xffd54a,depthTest:false});
-      lineBetween(a,da,extMat);
-      lineBetween(b,db,extMat);
-      lineBetween(da,db,extMat);
-
-      addArrow(da, unit.clone().multiplyScalar(1));
-      addArrow(db, unit.clone().multiplyScalar(-1));
-
-      marker(a); marker(b);
-
-      const div = document.createElement('div');
-      div.className = 'label';
-      div.textContent = `${distance.toFixed(3)} m  /  ${(distance*1000).toFixed(0)} mm`;
-      const label = new CSS2DObject(div);
-      label.position.copy(da).lerp(db,.5).add(new THREE.Vector3(0,.12,0));
-      annotationRoot.add(label);
-    }
-
-    renderer.domElement.addEventListener('pointerdown', (ev)=>{
-      if(ev.button !== 0) return;
-      const r = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((ev.clientX-r.left)/r.width)*2-1;
-      mouse.y = -((ev.clientY-r.top)/r.height)*2+1;
-      raycaster.setFromCamera(mouse,camera);
-      const hit = raycaster.intersectObjects(pickables,false)[0];
-      if(!hit) return;
-      const p = hit.point.clone();
-      if(!pendingPoint){
-        pendingPoint = p;
-        markerA = marker(p);
-      }else{
-        if(markerA){ annotationRoot.remove(markerA); markerA.geometry.dispose(); markerA.material.dispose(); markerA=null; }
-        addDimension(pendingPoint,p);
-        pendingPoint = null;
-      }
-    });
-
-    document.getElementById('clear').addEventListener('click',()=>{
-      pendingPoint = null;
-      while(annotationRoot.children.length){
-        const o = annotationRoot.children.pop();
-        if(o.element) o.element.remove();
-        if(o.geometry) o.geometry.dispose();
-        if(o.material) o.material.dispose();
-      }
-    });
-
-    addDimension(new THREE.Vector3(-2,0.02,1.5), new THREE.Vector3(2.5,0.02,1.5));
-
-    function onResize(){
-      camera.aspect = innerWidth/innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth,innerHeight);
-      labelRenderer.setSize(innerWidth,innerHeight);
-    }
-    addEventListener('resize',onResize);
-
-    renderer.setAnimationLoop(()=>{
-      controls.update();
-      renderer.render(scene,camera);
-      labelRenderer.render(scene,camera);
-    });
-  </script>
-</body>
-</html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three.js 3D CAD Snap Dimension Test</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#101214;color:#fff;font-family:Arial,"Noto Sans TC",sans-serif}#app{position:fixed;inset:0}
+#hud{position:fixed;left:14px;top:14px;z-index:20;background:rgba(8,10,12,.86);padding:12px 14px;border:1px solid #3b4148;border-radius:10px;max-width:370px;line-height:1.5;backdrop-filter:blur(8px)}
+#hud b{display:block;margin-bottom:5px}#hud small{color:#b7c0c8}button{margin-top:8px;padding:7px 11px;border:1px solid #59616a;background:#20252a;color:#fff;border-radius:6px}.label,.snap-label{padding:4px 7px;background:rgba(0,0,0,.86);border:1px solid #dfe7ee;border-radius:5px;white-space:nowrap;font-size:13px;pointer-events:none;transform:translate(-50%,-50%)}.snap-label{border-color:#59d9ff;color:#59d9ff;font-weight:700}
+#mode{margin-top:7px;color:#59d9ff;font-size:13px}
+</style>
+</head><body><div id="app"></div><div id="hud"><b>3D CAD Snap / Dimension Test</b>
+移動游標靠近模型幾何：<b style="display:inline;color:#59d9ff">端點 → 中點 → 面中心</b> 自動鎖點。<br>
+點第一個鎖點，再點第二個鎖點產生尺寸。拖曳仍可旋轉模型。<br><small>鎖點容許範圍：18 px｜1 Three.js unit = 1 m</small>
+<div id="mode">SNAP：等待幾何</div><button id="clear">清除標註</button></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';import{OrbitControls}from'three/addons/controls/OrbitControls.js';import{CSS2DRenderer,CSS2DObject}from'three/addons/renderers/CSS2DRenderer.js';
+const app=document.getElementById('app'),mode=document.getElementById('mode');const scene=new THREE.Scene();scene.background=new THREE.Color(0x101214);
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,1000);camera.position.set(8,7,10);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(devicePixelRatio);renderer.setSize(innerWidth,innerHeight);app.appendChild(renderer.domElement);
+const labels=new CSS2DRenderer();labels.setSize(innerWidth,innerHeight);Object.assign(labels.domElement.style,{position:'fixed',inset:'0',pointerEvents:'none'});document.body.appendChild(labels.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,1,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x333333,2));const dl=new THREE.DirectionalLight(0xffffff,3);dl.position.set(4,8,6);scene.add(dl);scene.add(new THREE.GridHelper(20,20,0x555555,0x2b2b2b));
+const pickables=[],wallMat=new THREE.MeshStandardMaterial({color:0x8f99a6,roughness:.75});function addBox(size,pos,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);scene.add(m);pickables.push(m);return m}
+addBox([8,.2,6],[0,-.1,0],new THREE.MeshStandardMaterial({color:0x4a4a4a}));addBox([8,3,.25],[0,1.5,-2.875],wallMat);addBox([.25,3,6],[-3.875,1.5,0],wallMat);addBox([2.2,1.6,1.8],[1.5,.8,.6],new THREE.MeshStandardMaterial({color:0xb57f4a}));
+const raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2(),annotationRoot=new THREE.Group();scene.add(annotationRoot);let pendingPoint=null,markerA=null,currentSnap=null,down=null;
+const hoverRoot=new THREE.Group();scene.add(hoverRoot);const hoverMarker=new THREE.Mesh(new THREE.RingGeometry(.08,.13,28),new THREE.MeshBasicMaterial({color:0x59d9ff,side:THREE.DoubleSide,depthTest:false}));hoverMarker.visible=false;hoverMarker.renderOrder=50;hoverRoot.add(hoverMarker);const snapDiv=document.createElement('div');snapDiv.className='snap-label';const snapLabel=new CSS2DObject(snapDiv);snapLabel.visible=false;hoverRoot.add(snapLabel);
+function marker(p){const s=new THREE.Mesh(new THREE.SphereGeometry(.065,16,16),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));s.position.copy(p);s.renderOrder=20;annotationRoot.add(s);return s}
+function lineBetween(a,b,mat){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),mat);l.renderOrder=10;annotationRoot.add(l);return l}
+function arrow(p,dir){const c=new THREE.Mesh(new THREE.ConeGeometry(.07,.22,18),new THREE.MeshBasicMaterial({color:0xffd54a,depthTest:false}));c.position.copy(p);c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());c.renderOrder=20;annotationRoot.add(c)}
+function addDimension(a,b){const d=new THREE.Vector3().subVectors(b,a),dist=d.length();if(dist<.001)return;const u=d.clone().normalize();let off=new THREE.Vector3().crossVectors(u,new THREE.Vector3(0,1,0));if(off.lengthSq()<.001)off.set(1,0,0);off.normalize().multiplyScalar(.35);const da=a.clone().add(off),db=b.clone().add(off),mat=new THREE.LineBasicMaterial({color:0xffd54a,depthTest:false});lineBetween(a,da,mat);lineBetween(b,db,mat);lineBetween(da,db,mat);arrow(da,u);arrow(db,u.clone().negate());marker(a);marker(b);const div=document.createElement('div');div.className='label';div.textContent=`${dist.toFixed(3)} m / ${(dist*1000).toFixed(0)} mm`;const lab=new CSS2DObject(div);lab.position.copy(da).lerp(db,.5).add(new THREE.Vector3(0,.12,0));annotationRoot.add(lab)}
+function screenDist(world,ev){const p=world.clone().project(camera),r=renderer.domElement.getBoundingClientRect();const x=(p.x*.5+.5)*r.width+r.left,y=(-p.y*.5+.5)*r.height+r.top;return Math.hypot(x-ev.clientX,y-ev.clientY)}
+function bboxCandidates(obj){obj.geometry.computeBoundingBox();const b=obj.geometry.boundingBox,min=b.min,max=b.max,pts=[];const xs=[min.x,max.x],ys=[min.y,max.y],zs=[min.z,max.z];const corners=[];for(const x of xs)for(const y of ys)for(const z of zs)corners.push(new THREE.Vector3(x,y,z));for(const p of corners)pts.push({type:'端點',priority:0,p:p.clone().applyMatrix4(obj.matrixWorld)});const edges=[[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];for(const[e1,e2]of edges){const p=corners[e1].clone().lerp(corners[e2],.5).applyMatrix4(obj.matrixWorld);pts.push({type:'中點',priority:1,p})}const c=b.getCenter(new THREE.Vector3()),faces=[[min.x,c.y,c.z],[max.x,c.y,c.z],[c.x,min.y,c.z],[c.x,max.y,c.z],[c.x,c.y,min.z],[c.x,c.y,max.z]];for(const f of faces)pts.push({type:'面中心',priority:2,p:new THREE.Vector3(...f).applyMatrix4(obj.matrixWorld)});return pts}
+function setMouse(ev){const r=renderer.domElement.getBoundingClientRect();mouse.x=((ev.clientX-r.left)/r.width)*2-1;mouse.y=-((ev.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(mouse,camera)}
+function findSnap(ev){setMouse(ev);const hit=raycaster.intersectObjects(pickables,false)[0];if(!hit)return null;const candidates=bboxCandidates(hit.object);let best=null;for(const c of candidates){const sd=screenDist(c.p,ev);if(sd<=18&&(!best||c.priority<best.priority||(c.priority===best.priority&&sd<best.sd)))best={...c,sd}}return best||{type:'自由點',priority:9,p:hit.point.clone(),sd:0}}
+function updateHover(ev){currentSnap=findSnap(ev);if(!currentSnap){hoverMarker.visible=false;snapLabel.visible=false;mode.textContent='SNAP：等待幾何';return}hoverMarker.visible=true;snapLabel.visible=true;hoverMarker.position.copy(currentSnap.p);hoverMarker.quaternion.copy(camera.quaternion);snapLabel.position.copy(currentSnap.p).add(new THREE.Vector3(0,.15,0));snapDiv.textContent=currentSnap.type;mode.textContent=`SNAP：${currentSnap.type}${currentSnap.type==='自由點'?'（未鎖定）':' ✓'}`}
+renderer.domElement.addEventListener('pointermove',ev=>updateHover(ev));renderer.domElement.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;down={x:ev.clientX,y:ev.clientY}});renderer.domElement.addEventListener('pointerup',ev=>{if(ev.button!==0||!down)return;const moved=Math.hypot(ev.clientX-down.x,ev.clientY-down.y);down=null;if(moved>5)return;updateHover(ev);if(!currentSnap)return;const p=currentSnap.p.clone();if(!pendingPoint){pendingPoint=p;markerA=marker(p)}else{if(markerA){annotationRoot.remove(markerA);markerA.geometry.dispose();markerA.material.dispose();markerA=null}addDimension(pendingPoint,p);pendingPoint=null}});
+document.getElementById('clear').addEventListener('click',()=>{pendingPoint=null;while(annotationRoot.children.length){const o=annotationRoot.children.pop();if(o.element)o.element.remove();if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()}});
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);labels.setSize(innerWidth,innerHeight)}addEventListener('resize',resize);renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);labels.render(scene,camera)});
+</script></body></html>
