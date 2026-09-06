@@ -5,18 +5,77 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Vizken AIGC / Web3D Lab</title>
 <style>
-:root{color-scheme:dark;--bg:#090b10;--panel:#121722;--line:#263041;--text:#eef2f7;--muted:#8f9bad;--accent:#6ee7d8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Noto Sans TC",sans-serif}.wrap{max-width:1180px;margin:auto;padding:48px 24px 72px}.eyebrow{color:var(--accent);letter-spacing:.16em;font-size:12px}.hero h1{font-size:clamp(34px,6vw,72px);margin:10px 0 8px}.hero p{color:var(--muted);max-width:720px;line-height:1.7}.group{margin-top:42px}.date{font-size:13px;color:var(--muted);margin:0 0 14px;border-bottom:1px solid var(--line);padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;text-decoration:none;color:inherit;background:linear-gradient(180deg,#141a25,#0f141d);border:1px solid var(--line);border-radius:16px;padding:22px;min-height:180px;transition:.2s}.card:hover{transform:translateY(-3px);border-color:#4e627e}.tag{display:inline-block;font-size:11px;border:1px solid #375361;border-radius:999px;padding:4px 8px;color:#9de9df}.card h2{font-size:22px;margin:18px 0 8px}.card p{color:var(--muted);line-height:1.55;margin:0}.path{margin-top:20px;font:12px monospace;color:#6f7c8f}footer{margin-top:48px;color:#596577;font-size:12px}
+:root{--ink:#171717;--paper:#f4f3ef;--grid:#d9dde2;--red:#e52b2f;--yellow:#f4be42;--muted:#6d7278}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Arial,"Noto Sans TC",sans-serif}
+body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+.shell{width:min(1500px,96vw);margin:24px auto 34px}
+.top{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;border-bottom:5px solid var(--ink);padding:8px 0 24px}
+.brand{min-width:0}.eyebrow{font-size:13px;letter-spacing:.18em;color:var(--red);font-weight:800}.brand h1{margin:8px 0 4px;font-size:clamp(30px,4.3vw,64px);line-height:.95;letter-spacing:-.035em}.brand p{margin:10px 0 0;max-width:760px;font-size:15px;line-height:1.55;font-weight:700;color:#555}
+.tabs{display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end}.tab{appearance:none;border:4px solid var(--ink);background:#fff;color:var(--ink);font-weight:900;font-size:18px;padding:16px 24px;min-width:105px;box-shadow:6px 6px 0 var(--ink);cursor:pointer;transition:.12s}.tab:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}.tab.active{background:var(--red);color:#fff}.tab.home{background:var(--yellow);color:var(--ink)}
+.viewer{margin-top:40px;border:5px solid var(--ink);background:#fff;box-shadow:10px 10px 0 rgba(0,0,0,.95)}
+.viewer-bar{min-height:82px;border-bottom:4px solid var(--ink);display:flex;align-items:center;justify-content:space-between;padding:14px 22px;gap:18px;background:#fff}.title-wrap{display:flex;align-items:center;gap:14px}.accent{width:9px;height:38px;background:var(--red)}.viewer-title{font-size:26px;font-weight:900;letter-spacing:.01em}.meta{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}.actions{display:flex;gap:12px}.mini{border:3px solid var(--ink);background:#fff;font-weight:900;padding:10px 16px;box-shadow:4px 4px 0 var(--ink);cursor:pointer}
+.frame-wrap{position:relative;height:min(70vh,820px);min-height:520px;background:#111}.frame-wrap iframe{width:100%;height:100%;border:0;display:block;background:#fff}.loading{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;background:#fff;z-index:2}.loading.hidden{display:none}
+.legend{display:flex;gap:22px;flex-wrap:wrap;padding:16px 20px;border-top:3px solid var(--ink);background:#fff;font-size:13px;font-weight:800}.legend span{display:inline-flex;gap:8px;align-items:center}.dot{width:11px;height:11px;background:var(--red);border:2px solid var(--ink)}
+footer{margin-top:28px;border-top:4px solid var(--ink);padding:18px 4px;color:#4e5358;font-size:12px;font-weight:700;display:flex;justify-content:space-between;gap:20px}
+@media(max-width:950px){.top{align-items:flex-start;flex-direction:column}.tabs{justify-content:flex-start}.tab{font-size:16px;padding:13px 17px;min-width:88px}.viewer-bar{align-items:flex-start;flex-direction:column}.frame-wrap{height:68vh;min-height:460px}}
 </style>
 </head>
-<body><main class="wrap">
-<section class="hero"><div class="eyebrow">VIZKEN / EXPERIMENT INDEX</div><h1>AIGC × Web3D Lab</h1><p>以日期與主題管理每一次技術實驗。點選卡片直接進入獨立網頁；每個案例保留自己的程式、素材與版本，不互相覆蓋。</p></section>
-<section class="group"><div class="date">2026 · 09 · 06</div><div class="grid">
-<a class="card" href="2026-09-06/rive-webgl2/"><span class="tag">Rive WebGL2</span><h2>Rive GPU Runtime Demo</h2><p>官方 WebGL2 Runtime、State Machine 與 Trigger 控制的獨立互動案例。</p><div class="path">/lab/2026-09-06/rive-webgl2/</div></a>
-<a class="card" href="2026-09-06/rive-three/"><span class="tag">Three.js × Rive</span><h2>GPU Canvas Annotation</h2><p>Three.js GLB Viewer 與 Rive GPU / State Machine 的工程標註整合實驗。</p><div class="path">/lab/2026-09-06/rive-three/</div></a>
-</div></section>
-<section class="group"><div class="date">2026 · 09 · 01</div><div class="grid">
-<a class="card" href="2026-09-01/anime-chair/"><span class="tag">Anime.js</span><h2>Red & Blue Chair Study</h2><p>Anime.js 動畫與幾何造型的前端實驗入口。</p><div class="path">/lab/2026-09-01/anime-chair/</div></a>
-</div></section>
-<footer>vizken / ChatGPT Experiments · GitHub Pages</footer>
-</main></body></html>
+<body>
+<main class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">VIZKEN · AIGC × WEB3D LAB</div>
+      <h1>INTERACTIVE EXPERIMENT INDEX</h1>
+      <p>用 PP 編號管理不同技術案例。點選上方 PP01、PP02、PP03，下方固定視窗直接切換並呈現對應網頁。</p>
+    </div>
+    <nav class="tabs" aria-label="Demo pages">
+      <button class="tab home active" data-src="about:blank" data-title="首頁 / Experiment Index" data-home="true">首頁</button>
+      <button class="tab" data-src="2026-09-01/anime-chair/" data-title="PP01 · Anime.js Red & Blue Chair">PP01</button>
+      <button class="tab" data-src="2026-09-06/rive-webgl2/" data-title="PP02 · Rive WebGL2 Runtime">PP02</button>
+      <button class="tab" data-src="2026-09-06/rive-three/" data-title="PP03 · Three.js × Rive Annotation">PP03</button>
+    </nav>
+  </header>
+
+  <section class="viewer">
+    <div class="viewer-bar">
+      <div class="title-wrap"><div class="accent"></div><div><div class="viewer-title" id="viewerTitle">首頁 / Experiment Index</div><div class="meta" id="viewerMeta">選擇上方 PP 編號切換下方展示頁</div></div></div>
+      <div class="actions"><button class="mini" id="reloadBtn">重新載入</button><button class="mini" id="openBtn">獨立開啟</button></div>
+    </div>
+    <div class="frame-wrap">
+      <div class="loading" id="loading">AIGC × Web3D LAB<br>請選擇 PP01 / PP02 / PP03</div>
+      <iframe id="demoFrame" title="Demo Viewer" src="about:blank" allow="fullscreen; autoplay; clipboard-read; clipboard-write" allowfullscreen></iframe>
+    </div>
+    <div class="legend"><span><i class="dot"></i>PP01 Anime.js</span><span><i class="dot"></i>PP02 Rive WebGL2</span><span><i class="dot"></i>PP03 3D Annotation</span></div>
+  </section>
+
+  <footer><span>vizken / ChatGPT Experiments · GitHub Pages</span><span>2026.09 · AIGC × BIM × Web3D</span></footer>
+</main>
+<script>
+const tabs=[...document.querySelectorAll('.tab')];
+const frame=document.getElementById('demoFrame');
+const loading=document.getElementById('loading');
+const title=document.getElementById('viewerTitle');
+const meta=document.getElementById('viewerMeta');
+let currentSrc='';
+function selectTab(btn){
+  tabs.forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  title.textContent=btn.dataset.title;
+  if(btn.dataset.home==='true'){
+    currentSrc=''; frame.src='about:blank'; loading.classList.remove('hidden');
+    loading.innerHTML='AIGC × Web3D LAB<br><small style="font-weight:700;color:#666">請選擇 PP01 / PP02 / PP03</small>';
+    meta.textContent='選擇上方 PP 編號切換下方展示頁';
+    return;
+  }
+  currentSrc=btn.dataset.src;
+  loading.classList.remove('hidden'); loading.textContent='Loading…';
+  meta.textContent=currentSrc;
+  frame.src=currentSrc;
+}
+tabs.forEach(btn=>btn.addEventListener('click',()=>selectTab(btn)));
+frame.addEventListener('load',()=>{if(currentSrc) loading.classList.add('hidden')});
+document.getElementById('reloadBtn').addEventListener('click',()=>{if(currentSrc){loading.classList.remove('hidden');frame.src=currentSrc}});
+document.getElementById('openBtn').addEventListener('click',()=>{if(currentSrc) window.open(currentSrc,'_blank','noopener')});
+</script>
+</body>
+</html>
