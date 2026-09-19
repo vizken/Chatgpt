@@ -22,19 +22,18 @@ b('topL',-5.2,.4,35.2,4.1,10.4,2.8,W);b('topC',0,.5,38.1,5.1,9.8,3,W);b('topR',5
 // conceptual steel structure (not engineering-final)
 const SM=new T.MeshStandardMaterial({color:0xb56f3c,metalness:.65,roughness:.35});
 function sb(n,x,y,z,w,d,h){const q=new T.Mesh(new T.BoxGeometry(w,d,h),SM);q.name=n;q.position.set(x,y,z+h/2);ST.add(q)}
-const gx=[-7.2,-2.4,2.4,7.2],gy=[-5.1,0,5.1],base=3.4,top=base+11*H;
-gx.forEach((x,ix)=>gy.forEach((y,iy)=>sb('C_'+(ix+1)+'_'+(iy+1),x,y,base,.42,.42,11*H)));
-for(let f=0;f<=11;f++){const z=base+f*H-.18;gy.forEach((y,iy)=>{for(let i=0;i<gx.length-1;i++){const x=(gx[i]+gx[i+1])/2;sb('BX_'+f+'_'+iy+'_'+i,x,y,z,gx[i+1]-gx[i],.28,.36)}});gx.forEach((x,ix)=>{for(let j=0;j<gy.length-1;j++){const y=(gy[j]+gy[j+1])/2;sb('BY_'+f+'_'+ix+'_'+j,x,y,z,.28,gy[j+1]-gy[j],.36)}})}
-// central braced/core zone
-[-2.4,2.4].forEach(x=>[-1.7,1.7].forEach(y=>sb('CORE_C',x,y,base,.5,.5,11*H)));
+const gx=[-7.6,-2.55,2.55,7.6],gy=[-5.45,0,5.45],base=3.4,top=base+11*H;
+gx.forEach((x,ix)=>gy.forEach((y,iy)=>sb('C_'+(ix+1)+'_'+(iy+1),x,y,base,.36,.36,11*H)));
+for(let f=0;f<=11;f++){const z=base+f*H-.18;gy.forEach((y,iy)=>{for(let i=0;i<gx.length-1;i++){const x=(gx[i]+gx[i+1])/2;sb('BX_'+f+'_'+iy+'_'+i,x,y,z,gx[i+1]-gx[i],.22,.32)}});gx.forEach((x,ix)=>{for(let j=0;j<gy.length-1;j++){const y=(gy[j]+gy[j+1])/2;sb('BY_'+f+'_'+ix+'_'+j,x,y,z,.22,gy[j+1]-gy[j],.32)}})}
+// central braced/core zone kept compact inside dark core
+[-2.1,2.1].forEach(x=>[-1.45,1.45].forEach(y=>sb('CORE_C',x,y,base,.42,.42,11*H)));
 function brace(x1,z1,x2,z2,y){const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),q=new T.Mesh(new T.BoxGeometry(.22,.22,len),SM);q.position.set((x1+x2)/2,y,(z1+z2)/2);q.rotation.y=Math.atan2(dx,dz);ST.add(q)}
-for(let f=0;f<11;f+=2){let z=base+f*H;brace(-2.4,z,2.4,z+2*H,0);brace(2.4,z,-2.4,z+2*H,0)}
-ST.position.copy(G.position);
+for(let f=0;f<11;f+=2){let z=base+f*H;brace(-2.1,z,2.1,z+2*H,0);brace(2.1,z,-2.1,z+2*H,0)}
 function setMode(m){document.querySelectorAll('[data-mode]').forEach(e=>e.classList.toggle('on',e.dataset.mode===m));G.visible=m!=='steel';ST.visible=m!=='arch';if(m==='both'){G.traverse(o=>{if(o.isMesh){o.material.transparent=true;o.material.opacity=.28}})}else{G.traverse(o=>{if(o.isMesh){o.material.transparent=(o.material===GL);o.material.opacity=o.material===GL?.6:1}})}}
 document.querySelectorAll('[data-mode]').forEach(e=>e.onclick=()=>setMode(e.dataset.mode));setMode('arch');
 // entrance
 b('canopy',1.5,-7.25,3.1,7,1.8,.4,D);
-const box=new T.Box3().setFromObject(G),c=box.getCenter(new T.Vector3()),sz=box.getSize(new T.Vector3());G.position.sub(c);const grid=new T.GridHelper(68,34,0x45494d,0x232629);grid.rotation.x=Math.PI/2;grid.position.z=-c.z;S.add(grid);const P=new T.PerspectiveCamera(34,innerWidth/innerHeight,.1,300);P.up.set(0,0,1);const O=new T.OrthographicCamera();O.up.set(0,0,1);let C=P;const ctl=new OrbitControls(P,R.domElement);ctl.enableDamping=true;function fit(){let a=innerWidth/innerHeight,k=Math.max(sz.z*.58,sz.x*.85);O.left=-k*a;O.right=k*a;O.top=k;O.bottom=-k;O.near=.1;O.far=300;O.updateProjectionMatrix()}fit();function v(n){document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('on',e.dataset.v===n));if(n==='design'){C=P;ctl.object=P;P.position.set(31,-43,26);P.lookAt(0,0,0)}else{C=O;ctl.object=O;let p={front:[0,-100,0],right:[100,0,0],back:[0,100,0],left:[-100,0,0]}[n];O.position.set(...p);O.lookAt(0,0,0)}ctl.target.set(0,0,0);ctl.update()}document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>v(e.dataset.v));document.getElementById('wire').onclick=()=>mats.forEach(m=>m.wireframe=!m.wireframe);
+const box=new T.Box3().setFromObject(G),c=box.getCenter(new T.Vector3()),sz=box.getSize(new T.Vector3());G.position.sub(c);ST.position.copy(G.position);const grid=new T.GridHelper(68,34,0x45494d,0x232629);grid.rotation.x=Math.PI/2;grid.position.z=-c.z;S.add(grid);const P=new T.PerspectiveCamera(34,innerWidth/innerHeight,.1,300);P.up.set(0,0,1);const O=new T.OrthographicCamera();O.up.set(0,0,1);let C=P;const ctl=new OrbitControls(P,R.domElement);ctl.enableDamping=true;function fit(){let a=innerWidth/innerHeight,k=Math.max(sz.z*.58,sz.x*.85);O.left=-k*a;O.right=k*a;O.top=k;O.bottom=-k;O.near=.1;O.far=300;O.updateProjectionMatrix()}fit();function v(n){document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('on',e.dataset.v===n));if(n==='design'){C=P;ctl.object=P;P.position.set(31,-43,26);P.lookAt(0,0,0)}else{C=O;ctl.object=O;let p={front:[0,-100,0],right:[100,0,0],back:[0,100,0],left:[-100,0,0]}[n];O.position.set(...p);O.lookAt(0,0,0)}ctl.target.set(0,0,0);ctl.update()}document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>v(e.dataset.v));document.getElementById('wire').onclick=()=>mats.forEach(m=>m.wireframe=!m.wireframe);
 const sheet=document.getElementById('sheet');const mainCanvas=R.domElement;
 function four(){
  const on=sheet.style.display==='grid';sheet.style.display=on?'none':'grid';mainCanvas.style.visibility=on?'visible':'hidden';
