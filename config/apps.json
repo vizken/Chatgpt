@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "applications": [
+    {
+      "id": "APP-001",
+      "name": "Annotation",
+      "description": "Three.js 3D 尺寸標註",
+      "category": "3D Tools",
+      "path": "../",
+      "status": "active",
+      "version": "1.0.0"
+    },
+    {
+      "id": "APP-002",
+      "name": "Anime-chair",
+      "description": "椅子組裝與爆炸動畫",
+      "category": "Animation",
+      "path": "../anime-chair.html",
+      "status": "active",
+      "version": "1.0.0"
+    },
+    {
+      "id": "APP-003",
+      "name": "Apartment12",
+      "description": "12 層建築 3D 模型",
+      "category": "Architecture",
+      "path": "../apartment12/",
+      "status": "active",
+      "version": "1.0.0"
+    }
+  ]
+}
