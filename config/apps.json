@@ -6,7 +6,7 @@
       "name": "Annotation",
       "description": "Three.js 3D 尺寸標註",
       "category": "3D Tools",
-      "path": "../",
+      "path": "apps/app001/",
       "status": "active",
       "version": "1.0.0"
     },
@@ -15,7 +15,7 @@
       "name": "Anime-chair",
       "description": "椅子組裝與爆炸動畫",
       "category": "Animation",
-      "path": "../anime-chair.html",
+      "path": "anime-chair.html",
       "status": "active",
       "version": "1.0.0"
     },
@@ -24,7 +24,7 @@
       "name": "Apartment12",
       "description": "12 層建築 3D 模型",
       "category": "Architecture",
-      "path": "../apartment12/",
+      "path": "apartment12/",
       "status": "active",
       "version": "1.0.0"
     },
@@ -33,7 +33,7 @@
       "name": "Roso-Chair-3D",
       "description": "Three.js 互動曲面椅子（概念模型 V4）",
       "category": "3D Tools",
-      "path": "../apps/app004/",
+      "path": "apps/app004/",
       "status": "active",
       "version": "4.0.0"
     }
