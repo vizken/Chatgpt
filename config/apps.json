@@ -27,6 +27,15 @@
       "path": "../apartment12/",
       "status": "active",
       "version": "1.0.0"
+    },
+    {
+      "id": "APP-004",
+      "name": "Roso-Chair-3D",
+      "description": "Three.js 互動曲面椅子（概念模型 V4）",
+      "category": "3D Tools",
+      "path": "../apps/app004/",
+      "status": "active",
+      "version": "4.0.0"
     }
   ]
 }
