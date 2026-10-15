@@ -1,35 +1,32 @@
-# Three.js Web3D Annotation Test
+# Vizken Web Application Lab
 
-Minimal browser test for engineering-style annotation in real 3D world space.
+A mobile-first, extensible launcher for independent HTML/Web3D experiments. **Existing application URLs must remain unchanged.**
 
-## Features
+## Current applications
+- APP-001 Annotation — `/index.html` (Three.js world-space dimensions)
+- APP-002 Anime-chair — `/anime-chair.html` (exploded chair animation)
+- APP-003 Apartment12 — `/apartment12/` (architectural model)
 
-- Three.js 3D scene
-- OrbitControls
-- Raycaster surface picking
-- Pick two 3D points to measure
-- 3D dimension line
-- Extension lines
-- 3D arrowheads
-- Distance calculation in metres and millimetres
-- CSS2D text label anchored to the 3D dimension
-- Multiple dimensions
-- Clear annotations
+## Publishing rules
+1. Every new application receives a permanent unique APP ID and an independent entry point under `apps/appNNN/index.html`. Existing legacy applications stay at their current URLs.
+2. Register each application in `config/apps.json`. The Lab reads this registry at runtime; never hardcode a fixed number of applications.
+3. Keep HTML/CSS/JS/assets within the application directory. Do not modify unrelated applications.
+4. For updates, reuse the existing APP ID and path; preserve Git history and increment the version.
+5. Test direct loading, asset paths, mobile layout, and Lab launch links before claiming deployment succeeded.
+6. The GitHub Pages site is hosted under `/Chatgpt/`: use URL resolution relative to the Lab page and do not assume a domain-root deployment.
+7. Never commit credentials, API tokens, or private data to this public repository.
+8. Publishing from ChatGPT requires an authorized GitHub write operation; successful commit does not by itself prove Pages deployment.
+9. Keep the launcher at `/lab/` and preserve the root `index.html` annotation application.
+10. Update `docs/CHANGELOG.md` after changes. Avoid destructive restructuring without approval.
 
-## Test
+## Mobile workflow
+Create HTML in ChatGPT → request “上傳 Lab” → validate → commit to GitHub → update registry → verify GitHub Pages → return direct application URL.
 
-Open `index.html` through a local HTTP server or enable GitHub Pages for the repository root.
+## Registry
+`config/apps.json` contains `schemaVersion` and an `applications` array. Each entry requires `id`, `name`, `description`, `category`, `path`, `status`, `version`. Paths are resolved relative to `/lab/`.
 
-Example:
+## Development
+Serve locally using `python -m http.server 8000`, then open `/lab/`. File protocol loading is not supported for JSON fetch.
 
-```bash
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
-
-## Architecture
-
-`Raycaster -> World-space points -> Dimension geometry -> CSS2D annotation`
-
-The geometry (dimension lines and arrows) lives in Three.js world space. The text is screen-readable HTML anchored to a 3D world position using CSS2DRenderer.
+## Agent policy
+See [AGENTS.md](AGENTS.md).
