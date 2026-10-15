@@ -1,0 +1,11 @@
+# AGENTS.md — Vizken Chatgpt
+- Read README.md and config/apps.json before editing.
+- Preserve root index.html, anime-chair.html, apartment12/, and all existing public URLs.
+- Each application is independent; Lab is a launcher, not a shared runtime.
+- New apps: create apps/appNNN/index.html, add a unique APP ID to config/apps.json, then validate links.
+- Updates: keep ID and path, increment version, change only scoped files.
+- Use relative URLs compatible with GitHub Pages /Chatgpt/ deployment.
+- Never commit secrets or silently overwrite other applications.
+- Test syntax, model assets, mobile viewport, navigation, and existing application smoke checks.
+- Report separately: generated, tested, committed, deployed, verified. Do not claim unperformed checks.
+- Update docs/CHANGELOG.md with meaningful changes.
