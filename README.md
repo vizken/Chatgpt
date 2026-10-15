@@ -7,6 +7,8 @@ A mobile-first, extensible launcher for independent HTML/Web3D experiments. **Ex
 - APP-002 Anime-chair — `/anime-chair.html` (exploded chair animation)
 - APP-003 Apartment12 — `/apartment12/` (architectural model)
 
+- APP-004 Roso-Chair-3D — `/apps/app004/` (conceptual Three.js chair surface viewer, V4; copied from vizken/Codex/Roso-Chair-3D)
+
 ## Publishing rules
 1. Every new application receives a permanent unique APP ID and an independent entry point under `apps/appNNN/index.html`. Existing legacy applications stay at their current URLs.
 2. Register each application in `config/apps.json`. The Lab reads this registry at runtime; never hardcode a fixed number of applications.
