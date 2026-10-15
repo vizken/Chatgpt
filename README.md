@@ -1,9 +1,11 @@
 # Vizken Web Application Lab
 
+The repository root `/Chatgpt/` is the unified application launcher. The legacy `/lab/` redirects to it. APP-001 is preserved at `/apps/app001/`.
+
 A mobile-first, extensible launcher for independent HTML/Web3D experiments. **Existing application URLs must remain unchanged.**
 
 ## Current applications
-- APP-001 Annotation — `/index.html` (Three.js world-space dimensions)
+- APP-001 Annotation — `/apps/app001/` (Three.js world-space dimensions)
 - APP-002 Anime-chair — `/anime-chair.html` (exploded chair animation)
 - APP-003 Apartment12 — `/apartment12/` (architectural model)
 
@@ -18,17 +20,17 @@ A mobile-first, extensible launcher for independent HTML/Web3D experiments. **Ex
 6. The GitHub Pages site is hosted under `/Chatgpt/`: use URL resolution relative to the Lab page and do not assume a domain-root deployment.
 7. Never commit credentials, API tokens, or private data to this public repository.
 8. Publishing from ChatGPT requires an authorized GitHub write operation; successful commit does not by itself prove Pages deployment.
-9. Keep the launcher at `/lab/` and preserve the root `index.html` annotation application.
+9. Keep the launcher at `/` and preserve the original annotation application at `apps/app001/index.html`; `/lab/` redirects to `/`.
 10. Update `docs/CHANGELOG.md` after changes. Avoid destructive restructuring without approval.
 
 ## Mobile workflow
 Create HTML in ChatGPT → request “上傳 Lab” → validate → commit to GitHub → update registry → verify GitHub Pages → return direct application URL.
 
 ## Registry
-`config/apps.json` contains `schemaVersion` and an `applications` array. Each entry requires `id`, `name`, `description`, `category`, `path`, `status`, `version`. Paths are resolved relative to `/lab/`.
+`config/apps.json` contains `schemaVersion` and an `applications` array. Each entry requires `id`, `name`, `description`, `category`, `path`, `status`, `version`. Paths are resolved relative to `/Chatgpt/`.
 
 ## Development
-Serve locally using `python -m http.server 8000`, then open `/lab/`. File protocol loading is not supported for JSON fetch.
+Serve locally using `python -m http.server 8000`, then open `/`. File protocol loading is not supported for JSON fetch.
 
 ## Agent policy
 See [AGENTS.md](AGENTS.md).
